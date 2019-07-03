@@ -82,7 +82,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                 var seedData = scope.ServiceProvider.GetRequiredService<IOptions<SeedData>>();
 
                 await EnsureSeedIdentityServerData(context, seedData.Value, rootConfiguration.AdminConfiguration);
-                await EnsureSeedIdentityData(userManager, roleManager, /*tenantManager,*/ rootConfiguration, seedData.Value);
+                await EnsureSeedIdentityData(userManager, roleManager/*, tenantManager*/, rootConfiguration, seedData.Value);
             }
         }
 
@@ -128,7 +128,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
             //            Id = tenant.Id,
             //            Name = tenant.Name,
             //            IsActive = tenant.IsActive,
-            //            CareCompleteDbName = tenant.CareCompleteDbName,
+            //            DataBaseName = tenant.CareCompleteDbName,
             //            Code = tenant.Code
             //        };
             //        await tenantManager.CreateAsync(t);
@@ -142,7 +142,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                 {
                     var us = new TUser
                     {
-                        UserName = u.Username,
+                        UserName = u.UserName,
                         Email = u.Email,
                         EmailConfirmed = true
                     };

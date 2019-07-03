@@ -25,7 +25,7 @@ namespace Skoruba.IdentityServer4.Admin
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
                     .AddJsonFile($"appsettingsseed.json", optional: false, reloadOnChange: false)
-                    //.AddJsonFile($"appsettingsseed.{env.EnvironmentName}.json", optional: true, reloadOnChange: false)
+                    .AddJsonFile($"appsettingsseed.{env.EnvironmentName}.json", optional: true, reloadOnChange: false)
                     .AddEnvironmentVariables();
 
             if (env.IsDevelopment())
