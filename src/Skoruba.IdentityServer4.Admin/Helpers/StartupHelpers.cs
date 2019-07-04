@@ -392,6 +392,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
             services.AddOptions();
 
             services.Configure<AdminConfiguration>(configuration.GetSection(ConfigurationConsts.AdminConfigurationKey));
+            services.Configure<TwoFactorAuthenticationConfiguration>(configuration.GetSection(ConfigurationConsts.TwoFactorAuthenticationConfiguration));
 
             services.TryAddSingleton<IRootConfiguration, RootConfiguration>();
 
