@@ -46,12 +46,6 @@ namespace Skoruba.IdentityServer4.Admin.DependencyInjection
 
             builder.Services.AddAdminServices<TIdentityServerConfigurationDbContext, TIdentityServerPersistedGrantDbContext, TAdminLogDbContext>();
 
-            // Regardless of multi or single tenant configuration we
-            // want to register the configuration for 2fa
-            // so that the user validator can determine the requirement
-            var configuration = services.BuildServiceProvider().GetRequiredService<IRootConfiguration>().TwoFactorAuthenticationConfiguration;
-            services.AddSingleton<Admin.EntityFramework.Shared.Validators.ITwoFactorAuthenticationConfiguration>(configuration);
-
             return builder;
         }
 

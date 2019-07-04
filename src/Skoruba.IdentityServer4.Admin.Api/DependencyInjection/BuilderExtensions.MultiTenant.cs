@@ -42,6 +42,7 @@ namespace Skoruba.IdentityServer4.Admin.Api.DependencyInjection
             builder.Services.Remove(builder.Services.FirstOrDefault(d => d.ServiceType == typeof(IUserValidator<MultiTenantUserIdentity>)));
             builder.AddUserValidator<MultiTenantUserIdentity, MultiTenantUserValidator>();
             builder.AddUserValidator<MultiTenantUserIdentity, RequireTenant>();
+            builder.AddUserValidator<MultiTenantUserIdentity, MightRequireTwoFactorAuthentication<MultiTenantUserIdentity>>();
 
             builder.Services.AddAdminServices<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext>();
 

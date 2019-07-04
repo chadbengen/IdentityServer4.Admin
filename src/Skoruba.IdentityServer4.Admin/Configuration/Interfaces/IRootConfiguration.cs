@@ -3,6 +3,5 @@
     public interface IRootConfiguration
     {
         IAdminConfiguration AdminConfiguration { get; }
-        ITwoFactorAuthenticationConfiguration TwoFactorAuthenticationConfiguration { get; }
     }
 }

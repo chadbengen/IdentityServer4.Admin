@@ -38,7 +38,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.DependencyInjection
                 .AddMvcWithLocalization
                     <UserIdentity, string>();
 
-            builder.AddUserValidator<UserIdentity, MightRequireTwoFactorAuthentication<UserIdentity>>();
+            ////Uncomment to require 2fa for users
+            //builder.AddUserValidator<UserIdentity, MightRequireTwoFactorAuthentication<UserIdentity>>();
 
             return builder;
         }
