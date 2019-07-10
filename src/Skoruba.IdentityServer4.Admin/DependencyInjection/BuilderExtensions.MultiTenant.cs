@@ -44,6 +44,8 @@ namespace Skoruba.IdentityServer4.Admin.DependencyInjection
                 UserClaimsDto<string>, UserProviderDto<string>, UserProvidersDto<string>, UserChangePasswordDto<string>,
                 RoleClaimsDto<string>, UserClaimDto<string>, RoleClaimDto<string>>();
 
+            builder.Services.AddMultiTenantServiceDepencies();
+
             return builder;
         }
 
