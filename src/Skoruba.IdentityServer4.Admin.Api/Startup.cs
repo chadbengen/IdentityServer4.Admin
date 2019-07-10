@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Skoruba.IdentityServer4.Admin.Api.Configuration;
 using Skoruba.IdentityServer4.Admin.Api.Configuration.Authorization;
 using Skoruba.IdentityServer4.Admin.Api.Configuration.Constants;
@@ -15,12 +16,16 @@ using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Swashbuckle.AspNetCore.Swagger;
+using Skoruba.IdentityServer4.Audit.Sink.DependencyInjection;
+using Skoruba.IdentityServer4.Audit.EntityFramework.DependencyInjection;
 
 namespace Skoruba.IdentityServer4.Admin.Api
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        private readonly ILoggerFactory _loggerFactory;
+
+        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -36,6 +41,7 @@ namespace Skoruba.IdentityServer4.Admin.Api
             Configuration = builder.Build();
 
             HostingEnvironment = env;
+            _loggerFactory = loggerFactory;
         }
 
         public IConfiguration Configuration { get; }
@@ -68,6 +74,12 @@ namespace Skoruba.IdentityServer4.Admin.Api
 
             services.AddApiAuthentication(adminApiConfiguration);
             services.AddAuthorizationPolicies();
+
+            services.AddIdentityServer4Auditing()
+                .AddIdentityServerOptions()
+                .AddConsoleSink()
+                .AddSerilogSinkWithDbContext(Configuration.GetConnectionString(ConfigurationConsts.IdentityDbConnectionStringKey), HostingEnvironment.EnvironmentName)
+                .AddDefaultIdentityServer4Sink();
 
             services.AddSwaggerGen(options =>
             {
