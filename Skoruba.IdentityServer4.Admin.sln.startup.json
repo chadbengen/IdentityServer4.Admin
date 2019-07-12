@@ -10,7 +10,6 @@
     "ListAllProjects": true,
 
     /*
-
         Dictionary of named configurations with one or multiple startup projects
         and optional parameters like command line arguments and working directory.
         Example:
