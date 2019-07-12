@@ -8,6 +8,9 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using System.Reflection;
 using Skoruba.IdentityServer4.STS.Identity.DependencyInjection;
+using Skoruba.IdentityServer4.Audit.Sink.DependencyInjection;
+using Skoruba.IdentityServer4.Audit.EntityFramework.DependencyInjection;
+using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants;
 
 namespace Skoruba.IdentityServer4.STS.Identity
 {
@@ -16,6 +19,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
         public IConfiguration Configuration { get; }
         public IHostingEnvironment Environment { get; }
         public ILogger Logger { get; set; }
+        private readonly ILoggerFactory _loggerFactory;
 
         public Startup(IHostingEnvironment environment, ILoggerFactory loggerFactory)
         {
@@ -32,6 +36,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             Configuration = builder.Build();
             Environment = environment;
+            _loggerFactory = loggerFactory;
             Logger = loggerFactory.CreateLogger<Startup>();
         }
 
@@ -64,6 +69,11 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             // Add services for authentication, including Identity model, IdentityServer4 and external providers
             services.AddAuthenticationServices(Configuration);
+
+            services.AddIdentityServer4Auditing()
+                .AddConsoleSink()
+                .AddSerilogSinkWithDbContext(Configuration.GetConnectionString(ConfigurationConsts.IdentityDbConnectionStringKey), Environment.EnvironmentName)
+                .AddDefaultIdentityServer4Sink();
 
             // Add authorization policies for MVC
             services.AddAuthorizationPolicies();
