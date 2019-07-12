@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
+using System.Reflection;
+using Skoruba.IdentityServer4.STS.Identity.DependencyInjection;
 using Skoruba.IdentityServer4.Audit.Sink.DependencyInjection;
 using Skoruba.IdentityServer4.Audit.EntityFramework.DependencyInjection;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants;
