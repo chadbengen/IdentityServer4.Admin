@@ -8,6 +8,8 @@ using Microsoft.Extensions.Options;
 using Skoruba.IdentityServer4.Admin.Configuration.Interfaces;
 using Skoruba.IdentityServer4.Admin.Configuration.SeedModels;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Interfaces;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Managers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,11 +80,11 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
                 var rootConfiguration = scope.ServiceProvider.GetRequiredService<IRootConfiguration>();
-                //var tenantManager = scope.ServiceProvider.GetRequiredService<ITenantManager>();
+                var tenantManager = scope.ServiceProvider.GetRequiredService<ITenantManager>();
                 var seedData = scope.ServiceProvider.GetRequiredService<IOptions<SeedData>>();
 
                 await EnsureSeedIdentityServerData(context, seedData.Value, rootConfiguration.AdminConfiguration);
-                await EnsureSeedIdentityData(userManager, roleManager/*, tenantManager*/, rootConfiguration, seedData.Value);
+                await EnsureSeedIdentityData(userManager, roleManager, tenantManager, rootConfiguration, seedData.Value);
             }
         }
 
@@ -91,7 +93,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
         /// </summary>
         private static async Task EnsureSeedIdentityData<TUser, TRole>(UserManager<TUser> userManager,
             RoleManager<TRole> roleManager,
-            //ITenantManager tenantManager,
+            ITenantManager tenantManager,
             IRootConfiguration rootConfiguration,
             SeedData seedData)
             where TUser : IdentityUser, new()
@@ -119,21 +121,21 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                 }
             }
 
-            //if (!await tenantManager.Tenants.AnyAsync())
-            //{
-            //    foreach (var tenant in seedData.Tenants)
-            //    {
-            //        var t = new EntityFramework.Shared.Entities.Tenants.Tenant
-            //        {
-            //            Id = tenant.Id,
-            //            Name = tenant.Name,
-            //            IsActive = tenant.IsActive,
-            //            DataBaseName = tenant.CareCompleteDbName,
-            //            Code = tenant.Code
-            //        };
-            //        await tenantManager.CreateAsync(t);
-            //    }
-            //}
+            if (!await tenantManager.Tenants.AnyAsync())
+            {
+                foreach (var tenant in seedData.Tenants)
+                {
+                    var t = new EntityFramework.Shared.Entities.Tenants.Tenant
+                    {
+                        Id = tenant.Id,
+                        Name = tenant.Name,
+                        IsActive = tenant.IsActive,
+                        DataBaseName = tenant.DataBaseName,
+                        Code = tenant.Code
+                    };
+                    await tenantManager.CreateAsync(t);
+                }
+            }
 
             if (!await userManager.Users.AnyAsync())
             {
@@ -147,7 +149,11 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                         EmailConfirmed = true
                     };
 
-                    //(us as UserIdentity).TenantId = u.TenantId;
+                    if (userManager.IsMultiTenant())
+                    {
+                        (us as MultiTenantUserIdentity).TenantId = u.TenantId;
+                    }
+
                     // if there is no password we create user without password
                     // user can reset password later, because accounts have EmailConfirmed set to true
                     var res = u.Password != null ? await userManager.CreateAsync(us, u.Password) : await userManager.CreateAsync(us);
