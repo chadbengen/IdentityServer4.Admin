@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
+using Skoruba.IdentityServer4.Audit.Core.Mappers;
 
 namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Mappers.Configuration
 {
@@ -53,6 +54,8 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Mappers.Configura
                 TUserProviderDto, TUserProvidersDto, TRoleClaimsDto, TUserClaimDto, TRoleClaimDto>));
 
             ProfileTypes.Add(typeof(TenantMapperProfile));
+
+            ProfileTypes.Add(typeof(AuditMappersProfile));
 
             return this;
         }
