@@ -280,4 +280,4 @@ __pycache__/
 !/src/Skoruba.IdentityServer4.Admin/Views/Log/
 
 # Ignore development settings
-appsettings.development.json
+*.development.json
