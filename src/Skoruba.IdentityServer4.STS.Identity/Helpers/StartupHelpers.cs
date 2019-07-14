@@ -429,6 +429,15 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
             {
                 options.AddPolicy(AuthorizationConsts.AdministrationPolicy,
                     policy => policy.RequireRole(AuthorizationConsts.AdministrationRole));
+
+                options.AddPolicy(AuthorizationConsts.TenantAdvancedUserPolicy,
+                    policy => policy.RequireRole(
+                        AuthorizationConsts.AdministrationRole,
+                        AuthorizationConsts.TenantAdministratorRole,
+                        AuthorizationConsts.TenantAdvancedUserRole));
+
+                //options.AddPolicy(AuthorizationConsts.CanDisableTwoFactorAuthenticationPolicy,
+                //    policy => policy.RequireAssertion((context) => !twoFactorAuthenticationConfiguration.IsRequired));
             });
         }
     }
