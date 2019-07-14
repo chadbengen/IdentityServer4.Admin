@@ -5,17 +5,27 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
+using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 using Skoruba.IdentityServer4.Admin.Configuration.Interfaces;
+using Skoruba.IdentityServer4.Admin.Configuration.SeedModels;
 using Skoruba.IdentityServer4.Admin.DependencyInjection;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.Admin.Helpers;
+using MediatR;
+using Skoruba.IdentityServer4.Audit.Core;
+using Skoruba.IdentityServer4.Audit.EntityFramework.Handlers;
+using Skoruba.IdentityServer4.Audit.Sink.DependencyInjection;
+using Skoruba.IdentityServer4.Audit.EntityFramework.DependencyInjection;
+using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 
 namespace Skoruba.IdentityServer4.Admin
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        private readonly ILoggerFactory _loggerFactory;
+
+        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -23,6 +33,8 @@ namespace Skoruba.IdentityServer4.Admin
                     .SetBasePath(env.ContentRootPath)
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile($"appsettingsseed.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile($"appsettingsseed.{env.EnvironmentName}.json", optional: true, reloadOnChange: false)
                     .AddEnvironmentVariables();
 
             if (env.IsDevelopment())
@@ -33,6 +45,7 @@ namespace Skoruba.IdentityServer4.Admin
             Configuration = builder.Build();
 
             HostingEnvironment = env;
+            _loggerFactory = loggerFactory;
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -87,8 +100,16 @@ namespace Skoruba.IdentityServer4.Admin
             // Add exception filters in MVC
             services.AddMvcExceptionFilters();
 
+            services.AddIdentityServer4Auditing()
+                .AddIdentityServerOptions()
+                .AddConsoleSink()
+                .AddSerilogSinkWithDbContext(Configuration.GetConnectionString(ConfigurationConsts.IdentityDbConnectionStringKey), HostingEnvironment.EnvironmentName)
+                .AddDefaultIdentityServer4Sink();
+
             // Add authorization policies for MVC
             services.AddAuthorizationPolicies();
+
+            services.Configure<SeedData>(Configuration.GetSection(ConfigurationConsts.SeedDataConfigurationKey));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

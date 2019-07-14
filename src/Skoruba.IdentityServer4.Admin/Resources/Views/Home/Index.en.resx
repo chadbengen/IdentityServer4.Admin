@@ -120,6 +120,9 @@
   <data name="ButtonApiResources" xml:space="preserve">
     <value>Api Resources</value>
   </data>
+  <data name="ButtonAudits" xml:space="preserve">
+    <value>Audits</value>
+  </data>
   <data name="ButtonClients" xml:space="preserve">
     <value>Clients</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="ButtonRoles" xml:space="preserve">
     <value>Roles</value>
+  </data>
+  <data name="ButtonTenants" xml:space="preserve">
+    <value>Tenants</value>
   </data>
   <data name="ButtonUsers" xml:space="preserve">
     <value>Users</value>

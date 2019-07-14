@@ -15,5 +15,6 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity
         /// Gets or sets the users application id
         /// </summary>
         public string ApplicationId { get; set; }
+
     }
 }
