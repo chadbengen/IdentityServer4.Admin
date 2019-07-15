@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Skoruba.IdentityServer4.Admin.Configuration.Interfaces;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Tenants;
 
 namespace Skoruba.IdentityServer4.Admin.Configuration.SeedModels
 {
@@ -20,7 +21,7 @@ namespace Skoruba.IdentityServer4.Admin.Configuration.SeedModels
         public List<IdentityResource> IdentityResources { get; set; }
         public List<ApiResource> ApiResources { get; set; }
 
-        // public List<Tenant> Tenants { get; set; }
+        public List<Tenant> Tenants { get; set; }
         public List<Role> Roles { get; set; }
 
         public List<User> Users { get; set; }

@@ -7,5 +7,7 @@ namespace Skoruba.IdentityServer4.Admin.Configuration.SeedModels
         public string Password { get; set; }
         public List<Claim> Claims { get; set; } = new List<Claim>();
         public List<string> Roles { get; set; } = new List<string>();
+        public string TenantId { get; set; }
+        public string ApplicationId { get; set; }
     }
 }
