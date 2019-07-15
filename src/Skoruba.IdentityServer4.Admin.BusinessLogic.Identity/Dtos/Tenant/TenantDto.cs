@@ -13,5 +13,7 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Tenant
         public string DataBaseName { get; set; }
         public string Code { get; set; }
         public bool IsActive { get; set; }
+        public bool RequireTwoFactorAuthentication { get; set; }
+
     }
 }

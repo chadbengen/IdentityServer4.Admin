@@ -22,11 +22,9 @@
         <thead>
             <tr>
                 <th></th>
-                <th></th>
                 <th>@Localizer["TenantId"]</th>
                 <th>@Localizer["Name"]</th>
                 <th>@Localizer["Code"]</th>
-                <th></th>
             </tr>
         </thead>
 
@@ -43,12 +41,6 @@
                     <td class="align-middle">@tenant.Id</td>
                     <td class="align-middle">@tenant.Name</td>
                     <td class="align-middle">@tenant.Code</td>
-                    <td class="align-middle">
-                        <a class="btn btn-danger" asp-action="TenantDelete" asp-route-id="@tenant.Id"><span class="oi oi-x"></span></a>
-                    </td>
-                    <td class="align-middle">
-                        <a class="btn btn-danger" asp-action="TenantDelete" asp-route-id="@tenant.Id"><span class="oi oi-x"></span></a>
-                    </td>
                 </tr>
             }
         </tbody>

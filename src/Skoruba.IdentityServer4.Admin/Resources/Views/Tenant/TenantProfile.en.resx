@@ -120,6 +120,9 @@
   <data name="ButtonSaveTenant" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="DatabaseNameLabel" xml:space="preserve">
+    <value>Database Name</value>
+  </data>
   <data name="NavigationTenants" xml:space="preserve">
     <value>Tenants</value>
   </data>
@@ -129,7 +132,7 @@
   <data name="PanelTitle" xml:space="preserve">
     <value>Tenant</value>
   </data>
-  <data name="String1" xml:space="preserve">
-    <value />
+  <data name="TwoFactorLabel" xml:space="preserve">
+    <value>Two Factor Enabled</value>
   </data>
 </root>
