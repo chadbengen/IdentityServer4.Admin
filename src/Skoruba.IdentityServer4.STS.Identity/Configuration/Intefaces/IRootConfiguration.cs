@@ -5,5 +5,6 @@
         IAdminConfiguration AdminConfiguration { get; }
 
         IRegisterConfiguration RegisterConfiguration { get; }
+        IBrandingConfiguration BrandingConfiguration { get; }
     }
 }

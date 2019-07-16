@@ -234,9 +234,9 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
 
             services.Configure<AdminConfiguration>(configuration.GetSection(ConfigurationConsts.AdminConfigurationKey));
             services.Configure<RegisterConfiguration>(configuration.GetSection(ConfigurationConsts.RegisterConfiguration));
+            services.Configure<BrandingConfiguration>(configuration.GetSection(ConfigurationConsts.BrandingConfigurationKey));
 
             services.TryAddSingleton<IRootConfiguration, RootConfiguration>();
-
             return services;
         }
 
