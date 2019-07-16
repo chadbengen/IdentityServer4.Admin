@@ -148,6 +148,6 @@
     <value>The administration for the IdentityServer4 and Asp.Net Core Identity</value>
   </data>
   <data name="PageTitle" xml:space="preserve">
-    <value>Skoruba IdentityServer4 Admin</value>
+    <value>CareComplete IdentityServer4 Admin</value>
   </data>
 </root>

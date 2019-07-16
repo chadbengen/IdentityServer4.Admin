@@ -4,7 +4,7 @@
 @inject IViewLocalizer Localizer
 
 <div class="welcome-block px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-    <h1 class="display-4"><img class="icon" alt="Logo" src="~/images/skoruba-icon.png"><br />@Localizer["Title"]</h1>
+    @*<h1 class="display-4"><img class="icon" alt="Logo" src="~/images/skoruba-icon.png"><br />@Localizer["Title"]</h1>*@
     <p class="lead">@Localizer["SubTitle"]</p>
 </div>
 
@@ -100,15 +100,5 @@
             </h1>
             <a href="~/.well-known/openid-configuration" class="btn btn-lg btn-block btn-outline-primary">@Localizer["Discovery"]</a>
         </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-8">
-        <p>
-            @Localizer["LinkTitle"]
-            <a href="https://github.com/identityserver/IdentityServer4">@Localizer["LinkSource"]</a>,
-            <a href="https://github.com/identityserver/IdentityServer4.Samples">@Localizer["LinkSamples"]</a>.
-        </p>
     </div>
 </div>

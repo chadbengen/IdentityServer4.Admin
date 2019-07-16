@@ -55,7 +55,7 @@
     "Auth": {
       "Projects": {
         "Skoruba.IdentityServer4.STS.Identity": {},
-        "Skoruba.IdentityServer4.Admin.Api": {},
+        //"Skoruba.IdentityServer4.Admin.Api": {},
         "Skoruba.IdentityServer4.Admin": {}
       }
     }
