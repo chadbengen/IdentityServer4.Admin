@@ -259,6 +259,25 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                     options.Scope.Add("user:email");
                 });
             }
+            if (externalProviderConfiguration.UseGoogleProvider)
+            {
+                //https://console.developers.google.com/apis/credentials/domainverification?project=rosy-griffin-106403&authuser=0
+                authenticationBuilder.AddGoogle(options =>
+                {
+                    options.ClientId = externalProviderConfiguration.GoogleClientId;
+                    options.ClientSecret = externalProviderConfiguration.GoogleClientSecret;
+                    options.Scope.Add("email");
+                });
+            }
+            if (externalProviderConfiguration.UseMicrosoftProvider)
+            {
+                //https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-v2-aspnet-core-webapp
+                authenticationBuilder.AddMicrosoftAccount(options =>
+                {
+                    options.ClientId = externalProviderConfiguration.MicrosoftClientId;
+                    options.ClientSecret = externalProviderConfiguration.MicrosoftClientSecret;
+                });
+            }
         }
 
         /// <summary>
