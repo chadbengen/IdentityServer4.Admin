@@ -3,6 +3,8 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity
 @using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants
+@using Skoruba.IdentityServer4.STS.Identity.Configuration.Intefaces
+@inject IRootConfiguration  RootConfiguration
 
 @inject IViewLocalizer Localizer
 @{
@@ -11,7 +13,12 @@
     {
         name = Context.User?.GetDisplayName();
     }
+
+    var footer = RootConfiguration.BrandingConfiguration.IsDefined
+        ? new LocalizedHtmlString("Footer", RootConfiguration.BrandingConfiguration.Footer)
+        : Localizer["Footer"];
 }
+
 @*//TODO: Conditionally inject UserIdentity or refactor hasExternalLogins to inject*@
 @inject SignInManager<MultiTenantUserIdentity> SignInManager
 @{
@@ -23,10 +30,21 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@Localizer["PageTitle"]</title>
-    <link rel="icon" type="image/x-icon" href="~/images/skoruba-icon.png" />
-    <link rel="shortcut icon" type="image/x-icon" href="~/images/skoruba-icon.png" />
-
+    @if (RootConfiguration.BrandingConfiguration.IsDefined)
+    {
+        <title>@RootConfiguration.BrandingConfiguration.Title</title>
+        @if (RootConfiguration.BrandingConfiguration.ShowIcon)
+        {
+            <link rel="icon" type="image/x-icon" href="~/images/@RootConfiguration.BrandingConfiguration.ImageUrl" />
+            <link rel="shortcut icon" type="image/x-icon" href="~/images/@RootConfiguration.BrandingConfiguration.ImageUrl" />
+        }
+    }
+    else
+    {
+        <title>@Localizer["PageTitle"]</title>
+        <link rel="icon" type="image/x-icon" href="~/images/skoruba-icon.png" />
+        <link rel="shortcut icon" type="image/x-icon" href="~/images/skoruba-icon.png" />
+    }
     <environment include="Development">
         <link href="~/dist/css/bundle.min.css" asp-append-version="true" rel="stylesheet" />
         <link href="~/dist/css/web.css" asp-append-version="true" rel="stylesheet" />
@@ -42,8 +60,14 @@
 
     <div class="menu d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
         <!--Site name -->
-        <h3 class="menu-logo my-0 mr-md-auto font-weight-normal"><a class="logo" asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Title"]</a></h3>
-
+        @if (RootConfiguration.BrandingConfiguration.IsDefined)
+        {
+            <h3 class="menu-logo my-0 mr-md-auto font-weight-normal"><a class="logo" asp-area="" asp-controller="Home" asp-action="Index">@RootConfiguration.BrandingConfiguration.Title</a></h3>
+        }
+        else
+        {
+            <h3 class="menu-logo my-0 mr-md-auto font-weight-normal"><a class="logo" asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Title"]</a></h3>
+        }
         <!--Menu item -->
         @if (User.Identity.IsAuthenticated)
         {
@@ -83,7 +107,7 @@
         <footer class="pt-4 my-md-5 pt-md-5 border-top">
             <div class="row">
                 <div class="col-6 col-md">
-                    @Localizer["Footer"]
+                    @footer
                     <small class="d-block mb-3 text-muted">@Localizer["FooterCopyright"]</small>
                 </div>
                 <div class="col-md-6 text-right">

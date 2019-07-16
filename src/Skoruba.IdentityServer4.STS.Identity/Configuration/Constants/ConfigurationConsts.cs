@@ -15,5 +15,7 @@
         public const string AdminConfigurationKey = "AdminConfiguration";
 
         public const string RegisterConfiguration = "RegisterConfiguration";
+
+        public const string BrandingConfigurationKey = "BrandingConfiguration";
     }
 }
