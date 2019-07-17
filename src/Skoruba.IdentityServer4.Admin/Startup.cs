@@ -4,28 +4,19 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 using Skoruba.IdentityServer4.Admin.Configuration.Interfaces;
 using Skoruba.IdentityServer4.Admin.Configuration.SeedModels;
 using Skoruba.IdentityServer4.Admin.DependencyInjection;
-using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
-using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.Admin.Helpers;
-using MediatR;
-using Skoruba.IdentityServer4.Audit.Core;
-using Skoruba.IdentityServer4.Audit.EntityFramework.Handlers;
 using Skoruba.IdentityServer4.Audit.Sink.DependencyInjection;
 using Skoruba.IdentityServer4.Audit.EntityFramework.DependencyInjection;
-using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 
 namespace Skoruba.IdentityServer4.Admin
 {
     public class Startup
     {
-        private readonly ILoggerFactory _loggerFactory;
-
-        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public Startup(IHostingEnvironment env)
         {
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -41,11 +32,8 @@ namespace Skoruba.IdentityServer4.Admin
             {
                 builder.AddUserSecrets<Startup>();
             }
-
             Configuration = builder.Build();
-
             HostingEnvironment = env;
-            _loggerFactory = loggerFactory;
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -57,34 +45,6 @@ namespace Skoruba.IdentityServer4.Admin
             // Get Configuration
             services.ConfigureRootConfiguration(Configuration);
             var rootConfiguration = services.BuildServiceProvider().GetService<IRootConfiguration>();
-
-            ///// Manual configuration
-            //services
-            //    .AddCustomConfiguration
-            //        <AdminIdentityDbContext, IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext>
-            //        (HostingEnvironment,
-            //        StartupHelpers.DefaultIdentityDbContextOptions(Configuration),
-            //        StartupHelpers.DefaultIdentityServerConfigurationOptions(Configuration),
-            //        StartupHelpers.DefaultIdentityServerOperationalStoreOptions(Configuration),
-            //        StartupHelpers.DefaultLogDbContextOptions(Configuration))
-            //    .AddCustomIdentity
-            //        <AdminIdentityDbContext, UserIdentity, UserIdentityRole>
-            //        (StartupHelpers.DefaultIdentityOptions(Configuration))
-            //    .AddCustomAdminAspNetIdentityServices
-            //        <AdminIdentityDbContext, IdentityServerPersistedGrantDbContext, UserDto<string>, string, RoleDto<string>, string, string, string,
-            //        UserIdentity, UserIdentityRole, string, UserIdentityUserClaim, UserIdentityUserRole,
-            //        UserIdentityUserLogin, UserIdentityRoleClaim, UserIdentityUserToken,
-            //        UsersDto<UserDto<string>, string>, RolesDto<RoleDto<string>, string>, UserRolesDto<RoleDto<string>, string, string>,
-            //        UserClaimsDto<string>, UserProviderDto<string>, UserProvidersDto<string>, UserChangePasswordDto<string>,
-            //        RoleClaimsDto<string>, UserClaimDto<string>, RoleClaimDto<string>>();
-
-            ///// Single tenant configuration (default)
-            //services.AddSingleTenantConfiguration(HostingEnvironment,
-            //    StartupHelpers.DefaultIdentityDbContextOptions(Configuration),
-            //    StartupHelpers.DefaultIdentityServerConfigurationOptions(Configuration),
-            //    StartupHelpers.DefaultIdentityServerOperationalStoreOptions(Configuration),
-            //    StartupHelpers.DefaultLogDbContextOptions(Configuration),
-            //    StartupHelpers.DefaultIdentityOptions(Configuration));
 
             /// Multi Tenant configuration
             services.AddMultiTenantConfiguration(HostingEnvironment,
@@ -99,7 +59,6 @@ namespace Skoruba.IdentityServer4.Admin
 
             // Add exception filters in MVC
             services.AddMvcExceptionFilters();
-
 
             services.AddIdentityServer4Auditing()
                 .AddIdentityServerOptions()

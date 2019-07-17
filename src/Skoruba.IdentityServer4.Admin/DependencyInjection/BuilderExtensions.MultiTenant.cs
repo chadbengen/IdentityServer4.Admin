@@ -60,7 +60,7 @@ namespace Skoruba.IdentityServer4.Admin.DependencyInjection
                 .AddIdentity<TUserIdentity, TUserIdentityRole>(identityOptions)
                 .AddEntityFrameworkStores<TIdentityDbContext>()
                 .AddUserStore<MultiTenantUserStore>()
-                //.AddSignInManager<MultiTenantSigninManager<TUserIdentity>>()
+                .AddSignInManager<MultiTenantSigninManager<TUserIdentity>>()
                 .AddUserManager<MultiTenantUserManager<TUserIdentity>>()
                 .AddDefaultTokenProviders();
 
