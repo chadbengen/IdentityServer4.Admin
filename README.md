@@ -127,6 +127,8 @@ Update-Database -context AdminIdentityDbContext
 ```
 #### Migrations for Asp.Net Core MultiTenant Identity DbContext:
 
+- This is an alternative to the AdminIdentityDbContext for use in MultiTenant Environments
+
 ```powershell
 Add-Migration AspNetMultiTenantIdentityDbInit -context MultiTenantUserIdentityDbContext -output Data/Migrations/Identity
 Update-Database -context MultiTenantUserIdentityDbContext
