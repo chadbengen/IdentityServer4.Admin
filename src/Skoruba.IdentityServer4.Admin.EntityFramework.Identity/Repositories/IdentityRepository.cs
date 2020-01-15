@@ -174,7 +174,6 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Identity.Repositories
         public virtual async Task<(IdentityResult identityResult, TKey userId)> CreateUserAsync(TUser user)
         {
             var identityResult = await UserManager.CreateAsync(user);
-
             return (identityResult, user.Id);
         }
 

@@ -15,6 +15,13 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.Admin.Helpers;
 using Skoruba.IdentityServer4.Admin.Configuration;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
+using Microsoft.EntityFrameworkCore;
+using Skoruba.MultiTenant;
+using Skoruba.MultiTenant.IdentityServer;
+using Skoruba.MultiTenant.Finbuckle.Strategies;
+using Skoruba.MultiTenant.Configuration;
+using Skoruba.MultiTenant.Finbuckle;
+using IdentityServer4.Services;
 
 namespace Skoruba.IdentityServer4.Admin
 {
@@ -36,12 +43,15 @@ namespace Skoruba.IdentityServer4.Admin
             var rootConfiguration = CreateRootConfiguration();
             services.AddSingleton(rootConfiguration);
 
+            // Register tenant configuration after root configuration
+            ConfigureMultiTenantServices(services);
+
             // Add DbContexts for Asp.Net Core Identity, Logging and IdentityServer - Configuration store and Operational store
             RegisterDbContexts(services);
 
             // Add Asp.Net Core Identity Configuration and OpenIdConnect auth as well
             RegisterAuthentication(services);
-            
+
             // Add exception filters in MVC
             services.AddMvcExceptionFilters();
 
@@ -56,7 +66,7 @@ namespace Skoruba.IdentityServer4.Admin
                                 UsersDto<UserDto<string>, string>, RolesDto<RoleDto<string>, string>, UserRolesDto<RoleDto<string>, string, string>,
                                 UserClaimsDto<string>, UserProviderDto<string>, UserProvidersDto<string>, UserChangePasswordDto<string>,
                                 RoleClaimsDto<string>, UserClaimDto<string>, RoleClaimDto<string>>();
-            
+
             // Add all dependencies for Asp.Net Core Identity in MVC - these dependencies are injected into generic Controllers
             // Including settings for MVC and Localization
             // If you want to change primary keys or use another db model for Asp.Net Core Identity:
@@ -74,6 +84,7 @@ namespace Skoruba.IdentityServer4.Admin
             services.AddAuditEventLogging<AdminAuditLogDbContext, AuditLog>(Configuration);
 
             services.AddIdSHealthChecks<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminIdentityDbContext, AdminLogDbContext, AdminAuditLogDbContext>(Configuration, rootConfiguration.AdminConfiguration);
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
@@ -94,18 +105,22 @@ namespace Skoruba.IdentityServer4.Admin
 
             UseAuthentication(app);
 
+            // If using a claims strategy then this must come after authentication;
+            // otherwise, this should go before authentication.
+            ConfigureMultiTenantMiddleware(app);
+
             // Use Localization
             app.ConfigureLocalization();
 
             app.UseRouting();
             app.UseAuthorization();
-            app.UseEndpoints(endpoint => 
-            { 
+            app.UseEndpoints(endpoint =>
+            {
                 endpoint.MapDefaultControllerRoute();
                 endpoint.MapHealthChecks("/health", new HealthCheckOptions
                 {
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });                
+                });
             });
         }
 
@@ -125,12 +140,44 @@ namespace Skoruba.IdentityServer4.Admin
             var rootConfiguration = CreateRootConfiguration();
             services.AddAuthorizationPolicies(rootConfiguration);
         }
+        public virtual void ConfigureMultiTenantServices(IServiceCollection services)
+        {
+            var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
 
+            if (configuration.MultiTenantEnabled)
+            {
+                services.AddMultiTenantConfiguration<SkorubaTenantContext>(configuration)
+                    // 
+                    // Add your multi tenant implementation services here
+                    //
+                    // register the default finbuckle multitenant services
+                    .WithFinbuckleMultiTenant()
+                    // custom store
+                    .WithEFCacheStore(options => options.UseSqlServer(Configuration.GetConnectionString("TenantsDbConnection")))
+                    // custom strategy to get tenant from form data at login
+                    .WithStrategy<ClaimsStrategy>(ServiceLifetime.Singleton);
+            }
+            else
+            {
+                services.AddSingleTenantConfiguration();
+            }
+        }
         public virtual void UseAuthentication(IApplicationBuilder app)
         {
             app.UseAuthentication();
         }
 
+        public virtual void ConfigureMultiTenantMiddleware(IApplicationBuilder app)
+        {
+            var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
+            if (configuration.MultiTenantEnabled)
+            {
+                // for the default Finbuckle implementation we are registering
+                // their middleware here.  The ClaimsStrategy requires the
+                // middleware to come after the authentication middleware.
+                app.UseMultiTenant();
+            }
+        }
         protected IRootConfiguration CreateRootConfiguration()
         {
             var rootConfiguration = new RootConfiguration();

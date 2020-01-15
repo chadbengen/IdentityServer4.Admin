@@ -27,6 +27,9 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.PostgreSQL.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Helpers;
+using Microsoft.IdentityModel.Logging;
+using Skoruba.MultiTenant.Configuration;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.MultiTenantIdentity;
 
 namespace Skoruba.IdentityServer4.STS.Identity.Helpers
 {
@@ -142,7 +145,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
             where TConfigurationDbContext : DbContext, IAdminConfigurationDbContext
         {
             var databaseProvider = configuration.GetSection(nameof(DatabaseProviderConfiguration)).Get<DatabaseProviderConfiguration>();
-            
+
             var identityConnectionString = configuration.GetConnectionString(ConfigurationConsts.IdentityDbConnectionStringKey);
             var configurationConnectionString = configuration.GetConnectionString(ConfigurationConsts.ConfigurationDbConnectionStringKey);
             var persistedGrantsConnectionString = configuration.GetConnectionString(ConfigurationConsts.PersistedGrantDbConnectionStringKey);
@@ -208,6 +211,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
         {
             var loginConfiguration = GetLoginConfiguration(configuration);
             var registrationConfiguration = GetRegistrationConfiguration(configuration);
+            var multiTenantConfiguration = configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
 
             services
                 .AddSingleton(registrationConfiguration)
@@ -218,13 +222,18 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<TIdentityDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddDefaultMultiTenantIdentityServices<TUserIdentity, TUserIdentityRole, DefaultMultiTenantUserStore, DefaultMultiTenantRoleStore>(multiTenantConfiguration.MultiTenantEnabled);
 
             services.Configure<IISOptions>(iis =>
             {
                 iis.AuthenticationDisplayName = "Windows";
                 iis.AutomaticAuthentication = false;
             });
+
+#if DEBUG
+            IdentityModelEventSource.ShowPII = true;
+#endif
 
             var authenticationBuilder = services.AddAuthentication();
 
@@ -282,6 +291,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
             where TConfigurationDbContext : DbContext, IAdminConfigurationDbContext
             where TUserIdentity : class
         {
+            var multiTenantConfiguration = configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
+
             var builder = services.AddIdentityServer(options =>
                 {
                     options.Events.RaiseErrorEvents = true;
@@ -292,6 +303,9 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 .AddConfigurationStore<TConfigurationDbContext>()
                 .AddOperationalStore<TPersistedGrantDbContext>()
                 .AddAspNetIdentity<TUserIdentity>();
+
+            if (multiTenantConfiguration.MultiTenantEnabled)
+                builder.AddProfileService<MultiTenant.IdentityServer.MultiTenantProfileService<TUserIdentity>>();
 
             builder.AddCustomSigningCredential(configuration);
             builder.AddCustomValidationKey(configuration);
@@ -351,9 +365,9 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
             where TIdentityDbContext : DbContext
         {
             var configurationDbConnectionString = configuration.GetConnectionString(ConfigurationConsts.ConfigurationDbConnectionStringKey);
-            var persistedGrantsDbConnectionString = configuration.GetConnectionString(ConfigurationConsts.PersistedGrantDbConnectionStringKey);            
+            var persistedGrantsDbConnectionString = configuration.GetConnectionString(ConfigurationConsts.PersistedGrantDbConnectionStringKey);
             var identityDbConnectionString = configuration.GetConnectionString(ConfigurationConsts.IdentityDbConnectionStringKey);
-            
+
             var healthChecksBuilder = services.AddHealthChecks()
                 .AddDbContextCheck<TConfigurationDbContext>("ConfigurationDbContext")
                 .AddDbContextCheck<TPersistedGrantDbContext>("PersistedGrantsDbContext")

@@ -42,6 +42,9 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.PostgreSQL.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Helpers;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.MultiTenantIdentity;
+using Skoruba.MultiTenant.Configuration;
+using Skoruba.MultiTenant.Claims;
 
 namespace Skoruba.IdentityServer4.Admin.Helpers
 {
@@ -311,12 +314,16 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
             this IServiceCollection services)
             where TContext : DbContext where TUserIdentity : class where TUserIdentityRole : class
         {
-            services.AddIdentity<TUserIdentity, TUserIdentityRole>(options =>
+            var multiTenantConfiguration = services.BuildServiceProvider().GetService<MultiTenantConfiguration>();
+            services
+                .AddIdentity<TUserIdentity, TUserIdentityRole>(options =>
                 {
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<TContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddDefaultMultiTenantIdentityServices<TUserIdentity, TUserIdentityRole, DefaultMultiTenantUserStore, DefaultMultiTenantRoleStore>(multiTenantConfiguration.MultiTenantEnabled);
+
 
             services.AddAuthentication(options =>
                 {
@@ -344,12 +351,15 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
         public static void AddAuthenticationServices<TContext, TUserIdentity, TUserIdentityRole>(this IServiceCollection services, AdminConfiguration adminConfiguration)
             where TContext : DbContext where TUserIdentity : class where TUserIdentityRole : class
         {
+            var multiTenantConfiguration = services.BuildServiceProvider().GetService<MultiTenantConfiguration>();
+
             services.AddIdentity<TUserIdentity, TUserIdentityRole>(options =>
                 {
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<TContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddDefaultMultiTenantIdentityServices<TUserIdentity, TUserIdentityRole, DefaultMultiTenantUserStore, DefaultMultiTenantRoleStore>(multiTenantConfiguration.MultiTenantEnabled);
 
             services.AddAuthentication(options =>
                 {
@@ -384,6 +394,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                         }
 
                         options.ClaimActions.MapJsonKey(adminConfiguration.TokenValidationClaimRole, adminConfiguration.TokenValidationClaimRole, adminConfiguration.TokenValidationClaimRole);
+                        options.ClaimActions.MapUniqueJsonKey(ClaimTypes.TenantId, ClaimTypes.TenantId);
 
                         options.SaveTokens = true;
 
@@ -399,10 +410,11 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                         {
                             OnMessageReceived = context => OnMessageReceived(context, adminConfiguration),
                             OnRedirectToIdentityProvider = context => OnRedirectToIdentityProvider(context, adminConfiguration)
+                        
                         };
+                                               
                     });
         }
-
         private static Task OnMessageReceived(MessageReceivedContext context, AdminConfiguration adminConfiguration)
         {
             context.Properties.IsPersistent = true;

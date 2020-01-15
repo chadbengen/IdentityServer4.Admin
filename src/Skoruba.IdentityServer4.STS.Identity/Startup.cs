@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +12,11 @@ using Skoruba.IdentityServer4.STS.Identity.Configuration;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Interfaces;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
+using Skoruba.MultiTenant;
+using Skoruba.MultiTenant.Configuration;
+using Skoruba.MultiTenant.Finbuckle;
+using Skoruba.MultiTenant.Finbuckle.Strategies;
+using Skoruba.MultiTenant.IdentityServer;
 
 namespace Skoruba.IdentityServer4.STS.Identity
 {
@@ -18,7 +24,6 @@ namespace Skoruba.IdentityServer4.STS.Identity
     {
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment Environment { get; }
-
         public Startup(IWebHostEnvironment environment, IConfiguration configuration)
         {
             Configuration = configuration;
@@ -30,6 +35,9 @@ namespace Skoruba.IdentityServer4.STS.Identity
             var rootConfiguration = CreateRootConfiguration();
             services.AddSingleton(rootConfiguration);
 
+            // Register tenant configuration after root configuration
+            ConfigureMultiTenantServices(services);
+
             // Register DbContexts for IdentityServer and Identity
             RegisterDbContexts(services);
 
@@ -38,7 +46,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             // Add services for authentication, including Identity model and external providers
             RegisterAuthentication(services);
-            
+
             // Add all dependencies for Asp.Net Core Identity in MVC - these dependencies are injected into generic Controllers
             // Including settings for MVC and Localization
             // If you want to change primary keys or use another db model for Asp.Net Core Identity:
@@ -61,13 +69,21 @@ namespace Skoruba.IdentityServer4.STS.Identity
             app.UseSecurityHeaders();
 
             app.UseStaticFiles();
-            UseAuthentication(app);
-            app.UseMvcLocalizationServices();
 
             app.UseRouting();
+
+            UseAuthentication(app);
+
+            // If using a claims strategy then this must come after authentication;
+            // otherwise, this should go before authentication.
+            ConfigureMultiTenantMiddleware(app);
+
+            app.UseMvcLocalizationServices();
+
             app.UseAuthorization();
-            app.UseEndpoints(endpoint => 
-            { 
+
+            app.UseEndpoints(endpoint =>
+            {
                 endpoint.MapDefaultControllerRoute();
                 endpoint.MapHealthChecks("/health", new HealthCheckOptions
                 {
@@ -92,17 +108,58 @@ namespace Skoruba.IdentityServer4.STS.Identity
             var rootConfiguration = CreateRootConfiguration();
             services.AddAuthorizationPolicies(rootConfiguration);
         }
+        public virtual void ConfigureMultiTenantServices(IServiceCollection services)
+        {
+            var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
+
+            if (configuration.MultiTenantEnabled)
+            {
+                services.AddMultiTenantConfiguration<SkorubaTenantContext>(configuration)
+                    // do not require tenant resolution for identity endpoints
+                    .RegisterTenantIsRequiredValidation<TenantNotRequiredForIdentityServerEndpoints>()
+                    // 
+                    // Add your multi tenant implementation services here
+                    // Changes here should also be considered in 
+                    // Skoruba.IdentityServer4.STS.Identity.Configuration.Test.StartupTestMultiTenant
+                    //
+                    // register the default finbuckle multitenant services
+                    // include configuration settings for the FormStrategy
+                    .WithFinbuckleMultiTenant(Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration))
+                    // custom store
+                    .WithEFCacheStore(options => options.UseSqlServer(Configuration.GetConnectionString("TenantsDbConnection")))
+                    // custom strategy to get tenant from user claims
+                    .WithStrategy<ClaimsStrategy>(ServiceLifetime.Singleton)
+                    // if that fails, then use custom strategy to get tenant from form data at login
+                    .WithStrategy<FormStrategy>(ServiceLifetime.Singleton);
+            }
+            else
+            {
+                services.AddSingleTenantConfiguration();
+            }
+        }
 
         public virtual void UseAuthentication(IApplicationBuilder app)
         {
             app.UseIdentityServer();
         }
 
+        public virtual void ConfigureMultiTenantMiddleware(IApplicationBuilder app)
+        {
+            var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
+            if (configuration.MultiTenantEnabled)
+            {
+                // for the default Finbuckle implementation we are registering
+                // their middleware here.  This middleware will use the
+                // resolution strategy defined in the services.
+                app.UseMultiTenant();
+            }
+        }
         protected IRootConfiguration CreateRootConfiguration()
         {
             var rootConfiguration = new RootConfiguration();
             Configuration.GetSection(ConfigurationConsts.AdminConfigurationKey).Bind(rootConfiguration.AdminConfiguration);
             Configuration.GetSection(ConfigurationConsts.RegisterConfigurationKey).Bind(rootConfiguration.RegisterConfiguration);
+            Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Bind(rootConfiguration.MultiTenantConfiguration);
             return rootConfiguration;
         }
     }
