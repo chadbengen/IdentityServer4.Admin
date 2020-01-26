@@ -215,9 +215,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
             services
                 .AddSingleton(registrationConfiguration)
                 .AddSingleton(loginConfiguration)
-                .AddScoped<UserResolver<TUserIdentity>>();
-
-            services
+                .AddScoped<UserResolver<TUserIdentity>>()
                 .AddIdentity<TUserIdentity, TUserIdentityRole>(options =>
                 {
                     options.User.RequireUniqueEmail = true;

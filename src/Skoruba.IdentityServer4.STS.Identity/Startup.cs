@@ -42,7 +42,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             // Add services for authentication, including Identity model and external providers
             RegisterAuthentication(services);
-            
+
             // Add all dependencies for Asp.Net Core Identity in MVC - these dependencies are injected into generic Controllers
             // Including settings for MVC and Localization
             // If you want to change primary keys or use another db model for Asp.Net Core Identity:
@@ -52,7 +52,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
             RegisterAuthorization(services);
 
             // If single tenant app then change to false and remove app configuration
-            services.AddMultiTenant(false)
+            services.AddMultiTenant(true)
                 // required if using app.AddMultiTenantFromForm()
                 .RegisterConfiguration(Configuration.GetSection("MultiTenantConfiguration"))
                 // custom store
@@ -77,7 +77,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
             app.UseSecurityHeaders();
 
             app.UseStaticFiles();
-           
+
             app.UseRouting();
 
             // configure default multitenant middleware before authentication
@@ -91,9 +91,9 @@ namespace Skoruba.IdentityServer4.STS.Identity
             app.UseMvcLocalizationServices();
 
             app.UseAuthorization();
-         
-            app.UseEndpoints(endpoint => 
-            { 
+
+            app.UseEndpoints(endpoint =>
+            {
                 endpoint.MapDefaultControllerRoute();
                 endpoint.MapHealthChecks("/health", new HealthCheckOptions
                 {
@@ -123,7 +123,6 @@ namespace Skoruba.IdentityServer4.STS.Identity
         {
             app.UseIdentityServer();
         }
-
         protected IRootConfiguration CreateRootConfiguration()
         {
             var rootConfiguration = new RootConfiguration();
