@@ -31,10 +31,16 @@ using Skoruba.IdentityServer4.Admin.Helpers.Localization;
 using Xunit;
 using System.Security.Claims;
 using Skoruba.MultiTenant.Abstractions;
+using Skoruba.MultiTenant.Finbuckle;
+using Skoruba.MultiTenant.Finbuckle.Strategies;
+using Skoruba.MultiTenant.Stores;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.MultiTenantIdentity;
+using Finbuckle.MultiTenant;
+using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Resources;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 {
-    public class IdentityControllerTests
+    public class IdentityControllerMultiTenantTests
     {
         private IIdentityService<UserDto<string>, string, RoleDto<string>, string, string, string,
             UserIdentity, UserIdentityRole, string, UserIdentityUserClaim, UserIdentityUserRole,
@@ -51,7 +57,6 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
                 RoleClaimsDto<string>>>();
         }
 
-
         [Fact]
         public async Task AddUser()
         {
@@ -63,6 +68,11 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
             // Get controller
             var controller = PrepareIdentityController(serviceProvider);
             var userDto = IdentityDtoMock<string>.GenerateRandomUser();
+
+            // Set tenant claim
+            var subjectClaim = new Claim(MultiTenant.Claims.ClaimTypes.TenantId, TenantMock.GetTenantFaker.Generate().Id);
+            ProvideControllerContextWithClaimsPrincipal(controller, subjectClaim);
+
             var result = await controller.UserProfile(userDto);
 
             // Assert            
@@ -76,7 +86,29 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 
             userDto.ShouldBeEquivalentTo(addedUser, opts => opts.Excluding(x => x.Id));
         }
-        
+
+        [Fact]
+        public async Task AddUserWithDifferentTenantFails()
+        {
+            //Get Services
+            var serviceProvider = GetServices();
+
+            // Get controller
+            var controller = PrepareIdentityController(serviceProvider);
+            var userDto = IdentityDtoMock<string>.GenerateRandomUser();
+            userDto.TenantId = Guid.NewGuid().ToString();
+
+            // Assert
+            try
+            {
+                var result = await controller.UserProfile(userDto);
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Should().BeEquivalentTo("User creating failed");
+            }
+        }
+
         [Fact]
         public async Task DeleteUser()
         {
@@ -96,8 +128,8 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 
             // A user cannot delete own account
             var subjectClaim = new Claim(IdentityModel.JwtClaimTypes.Subject, userDto.Id);
-            ProvideControllerContextWithClaimsPrincipal(controller, subjectClaim);            
-            
+            ProvideControllerContextWithClaimsPrincipal(controller, subjectClaim);
+
             var result = await controller.UserDelete(userDto);
 
             // Assert            
@@ -204,6 +236,28 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
             var addedRole = await identityService.GetRoleAsync(roleDto.Id.ToString());
 
             roleDto.ShouldBeEquivalentTo(addedRole, opts => opts.Excluding(x => x.Id));
+        }
+
+        [Fact]
+        public async Task AddRoleWithDifferentTenant()
+        {
+            //Get Services
+            var serviceProvider = GetServices();
+
+            // Get controller
+            var controller = PrepareIdentityController(serviceProvider);
+            var roleDto = IdentityDtoMock<string>.GenerateRandomRole();
+            roleDto.TenantId = Guid.NewGuid().ToString();
+
+            // Assert
+            try
+            {
+                var result = await controller.Role(roleDto);
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Should().BeEquivalentTo("Role creating failed");
+            }
         }
 
         [Fact]
@@ -592,7 +646,27 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
 
             // Tenancy
-            services.AddMultiTenantConfiguration<SkorubaSingleTenantContext>(new MultiTenant.Configuration.MultiTenantConfiguration() { MultiTenantEnabled = false });
+            var tenantDatabaseName = Guid.NewGuid().ToString();
+            var configuration = new MultiTenant.Configuration.MultiTenantConfiguration() { MultiTenantEnabled = true };
+            services.AddMultiTenantConfiguration<SkorubaTenantContext>(configuration)
+                // 
+                // Add your multi tenant implementation services here
+                //
+                // register the default finbuckle multitenant services
+                .WithFinbuckleMultiTenant()
+                // custom store
+                .WithEFCacheStore(options => options.UseInMemoryDatabase(tenantDatabaseName))
+                // custom strategy to get tenant from form data at login
+                .WithStrategy<ClaimsStrategy>(ServiceLifetime.Singleton);
+
+            // seed tenant for integration tests
+            var tenantStore = services.BuildServiceProvider().GetService<EFCoreStoreDbContext>();
+            var tenant = TenantMock.GetTenantFaker.Generate();
+            tenantStore.TenantInfo.Add(new TenantEntity() { Id = tenant.Id, Identifier = tenant.Identifier, ConnectionString = tenant.ConnectionString, Items = tenant.Items, Name = tenant.Name });
+            tenantStore.SaveChanges();
+
+            // register mock tenant
+            services.AddSingleton(tenant);
 
             //Entity framework
             var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
@@ -620,7 +694,7 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 
             services.AddAdminServices<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext>();
 
-            services.AddAdminAspNetIdentityServices<AdminIdentityDbContext, IdentityServerPersistedGrantDbContext,UserDto<string>, string, RoleDto<string>, string, string, string,
+            services.AddAdminAspNetIdentityServices<AdminIdentityDbContext, IdentityServerPersistedGrantDbContext, UserDto<string>, string, RoleDto<string>, string, string, string,
                 UserIdentity, UserIdentityRole, string, UserIdentityUserClaim, UserIdentityUserRole,
                 UserIdentityUserLogin, UserIdentityRoleClaim, UserIdentityUserToken,
                 UsersDto<UserDto<string>, string>, RolesDto<RoleDto<string>, string>, UserRolesDto<RoleDto<string>, string, string>,
@@ -629,7 +703,8 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 
             services.AddIdentity<UserIdentity, UserIdentityRole>()
                 .AddEntityFrameworkStores<AdminIdentityDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddDefaultMultiTenantIdentityServices<UserIdentity, UserIdentityRole, DefaultMultiTenantUserStore, DefaultMultiTenantRoleStore>(true);
 
             services.AddSession();
 

@@ -183,6 +183,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.IntegrationTests.TestsMultiTenant
             // Assert Identity cookie
             existsCookie.Should().BeFalse();
         }
+  
         [Fact]
         public async Task UserIsNotAbleToLoginWithIncorrectTenant()
         {

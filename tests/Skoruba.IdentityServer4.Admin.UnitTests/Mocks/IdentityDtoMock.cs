@@ -1,9 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bogus;
+using Finbuckle.MultiTenant;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Mocks
 {
+
+    public class TenantMock
+    {
+        public static Faker<TenantInfo> GetTenantFaker =>
+            new Faker<TenantInfo>()
+                .RuleFor(o => o.Id, "00000000-0000-0000-0000-000000000000")
+                .RuleFor(o => o.Identifier, "0000")
+                .RuleFor(o => o.Items, new Dictionary<string, object>())
+                .RuleFor(o => o.Name, f => f.Random.String())
+                .RuleFor(o => o.ConnectionString, f=> f.Random.String());
+
+    }
     public class IdentityDtoMock<TKey>
     {
         public static Faker<UserDto<TKey>> GetUserFaker(TKey id)
@@ -18,7 +32,8 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Mocks
                 .RuleFor(o => o.TwoFactorEnabled, f => f.Random.Bool())
                 .RuleFor(o => o.LockoutEnd, f => f.Date.Future())
                 .RuleFor(o => o.LockoutEnabled, f => true)
-                .RuleFor(o => o.PhoneNumber, f => f.Random.Number().ToString());
+                .RuleFor(o => o.PhoneNumber, f => f.Random.Number().ToString())
+                .RuleFor(o => o.TenantId, f => TenantMock.GetTenantFaker.Generate().Id);
 
             return userFaker;
         }
@@ -27,7 +42,8 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Mocks
         {
             var roleFaker = new Faker<RoleDto<TKey>>()
                 .RuleFor(o => o.Id, id)
-                .RuleFor(o => o.Name, f => Guid.NewGuid().ToString());
+                .RuleFor(o => o.Name, f => Guid.NewGuid().ToString())
+                .RuleFor(o => o.TenantId, f => TenantMock.GetTenantFaker.Generate().Id);
 
             return roleFaker;
         }
@@ -49,7 +65,7 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Mocks
             return userChangePassword;
         }
 
-        public static UserDto<TKey> GenerateRandomUser(TKey id = default(TKey))        
+        public static UserDto<TKey> GenerateRandomUser(TKey id = default(TKey))
         {
             var user = GetUserFaker(id).Generate();
 
