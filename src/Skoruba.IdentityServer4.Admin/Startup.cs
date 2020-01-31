@@ -21,6 +21,7 @@ using Skoruba.MultiTenant.IdentityServer;
 using Skoruba.MultiTenant.Finbuckle.Strategies;
 using Skoruba.MultiTenant.Configuration;
 using Skoruba.MultiTenant.Finbuckle;
+using IdentityServer4.Services;
 
 namespace Skoruba.IdentityServer4.Admin
 {
@@ -43,7 +44,7 @@ namespace Skoruba.IdentityServer4.Admin
             services.AddSingleton(rootConfiguration);
 
             // Register tenant configuration after root configuration
-            RegisterMultiTenantConfiguration(services);
+            ConfigureMultiTenantServices(services);
 
             // Add DbContexts for Asp.Net Core Identity, Logging and IdentityServer - Configuration store and Operational store
             RegisterDbContexts(services);
@@ -83,6 +84,7 @@ namespace Skoruba.IdentityServer4.Admin
             services.AddAuditEventLogging<AdminAuditLogDbContext, AuditLog>(Configuration);
 
             services.AddIdSHealthChecks<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminIdentityDbContext, AdminLogDbContext, AdminAuditLogDbContext>(Configuration, rootConfiguration.AdminConfiguration);
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
@@ -101,11 +103,11 @@ namespace Skoruba.IdentityServer4.Admin
 
             app.UseStaticFiles();
 
-            UsePreAuthenticationMultitenantMiddleware(app);
-
             UseAuthentication(app);
 
-            UsePostAuthenticationMultitenantMiddleware(app);
+            // If using a claims strategy then this must come after authentication;
+            // otherwise, this should go before authentication.
+            ConfigureMultiTenantMiddleware(app);
 
             // Use Localization
             app.ConfigureLocalization();
@@ -138,7 +140,7 @@ namespace Skoruba.IdentityServer4.Admin
             var rootConfiguration = CreateRootConfiguration();
             services.AddAuthorizationPolicies(rootConfiguration);
         }
-        public virtual void RegisterMultiTenantConfiguration(IServiceCollection services)
+        public virtual void ConfigureMultiTenantServices(IServiceCollection services)
         {
             var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
 
@@ -165,30 +167,11 @@ namespace Skoruba.IdentityServer4.Admin
             app.UseAuthentication();
         }
 
-        public virtual void UsePreAuthenticationMultitenantMiddleware(IApplicationBuilder app)
+        public virtual void ConfigureMultiTenantMiddleware(IApplicationBuilder app)
         {
             var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
             if (configuration.MultiTenantEnabled)
             {
-                // if your multienant implementation requires any middleware 
-                // to be configured BEFORE the authentication middleware
-                // then put it here.
-                //
-                // for the default Finbuckle implementation we are not
-                // registering anything here becuase we are relying on
-                // the ClaimsStrategy which requires the middleware
-                // to come after the authentication middleware.
-            }
-        }
-        public virtual void UsePostAuthenticationMultitenantMiddleware(IApplicationBuilder app)
-        {
-            var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
-            if (configuration.MultiTenantEnabled)
-            {
-                // if your multienant implementation requires any middleware 
-                // to be configured AFTER the authentication middleware
-                // then put it here.
-                //
                 // for the default Finbuckle implementation we are registering
                 // their middleware here.  The ClaimsStrategy requires the
                 // middleware to come after the authentication middleware.

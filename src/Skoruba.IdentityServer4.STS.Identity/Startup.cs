@@ -36,7 +36,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
             services.AddSingleton(rootConfiguration);
 
             // Register tenant configuration after root configuration
-            RegisterMultiTenantConfiguration(services);
+            ConfigureMultiTenantServices(services);
 
             // Register DbContexts for IdentityServer and Identity
             RegisterDbContexts(services);
@@ -55,7 +55,6 @@ namespace Skoruba.IdentityServer4.STS.Identity
             // Add authorization policies for MVC
             RegisterAuthorization(services);
 
-
             services.AddIdSHealthChecks<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminIdentityDbContext>(Configuration);
         }
 
@@ -73,13 +72,11 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             app.UseRouting();
 
-            // configure default multitenant middleware before authentication
-            UsePreAuthenticationMultitenantMiddleware(app);
-
             UseAuthentication(app);
 
-            // configure custom multitenant middleware for claims after authentication
-            UsePostAuthenticationMultitenantMiddleware(app);
+            // If using a claims strategy then this must come after authentication;
+            // otherwise, this should go before authentication.
+            ConfigureMultiTenantMiddleware(app);
 
             app.UseMvcLocalizationServices();
 
@@ -111,7 +108,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
             var rootConfiguration = CreateRootConfiguration();
             services.AddAuthorizationPolicies(rootConfiguration);
         }
-        public virtual void RegisterMultiTenantConfiguration(IServiceCollection services)
+        public virtual void ConfigureMultiTenantServices(IServiceCollection services)
         {
             var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
 
@@ -146,33 +143,14 @@ namespace Skoruba.IdentityServer4.STS.Identity
             app.UseIdentityServer();
         }
 
-        public virtual void UsePreAuthenticationMultitenantMiddleware(IApplicationBuilder app)
+        public virtual void ConfigureMultiTenantMiddleware(IApplicationBuilder app)
         {
             var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
             if (configuration.MultiTenantEnabled)
             {
-                // if your multienant implementation requires any middleware 
-                // to be configured BEFORE the authentication middleware
-                // then put it here.
-                //
                 // for the default Finbuckle implementation we are registering
                 // their middleware here.  This middleware will use the
                 // resolution strategy defined in the services.
-            }
-        }
-        public virtual void UsePostAuthenticationMultitenantMiddleware(IApplicationBuilder app)
-        {
-            var configuration = Configuration.GetSection(ConfigurationConsts.MultiTenantConfiguration).Get<MultiTenantConfiguration>();
-            if (configuration.MultiTenantEnabled)
-            {
-                // if your multienant implementation requires any middleware 
-                // to be configured AFTER the authentication middleware
-                // then put it here.
-                //
-                // for the default Finbuckle implementation we are registering
-                // an claims based middleware to resolve the tenant from
-                // the user claims.  This middleware will resolve the tenant
-                // if the first middleware fails.
                 app.UseMultiTenant();
             }
         }
