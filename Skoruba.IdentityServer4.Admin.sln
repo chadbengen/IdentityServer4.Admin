@@ -65,6 +65,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skoruba.MultiTenant", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skoruba.MultiTenant.Finbuckle", "src\Skoruba.MultiTenant.Finbuckle\Skoruba.MultiTenant.Finbuckle.csproj", "{7717F456-5520-4F2D-849F-6C13A54E3731}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skoruba.MultiTenant.EntityFramework", "src\Skoruba.MultiTenant.EntityFramework\Skoruba.MultiTenant.EntityFramework.csproj", "{9937D5FB-24AF-4CA9-859A-C14BBCE3B2B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +173,10 @@ Global
 		{7717F456-5520-4F2D-849F-6C13A54E3731}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7717F456-5520-4F2D-849F-6C13A54E3731}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7717F456-5520-4F2D-849F-6C13A54E3731}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9937D5FB-24AF-4CA9-859A-C14BBCE3B2B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9937D5FB-24AF-4CA9-859A-C14BBCE3B2B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9937D5FB-24AF-4CA9-859A-C14BBCE3B2B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9937D5FB-24AF-4CA9-859A-C14BBCE3B2B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,6 +206,7 @@ Global
 		{9DB8EC68-139F-4487-AD5B-AEDBBD99C5B7} = {2A514C8F-6A53-41CA-AB41-B644E7BC92A7}
 		{30174CB3-F4DF-4325-BFE5-F5198825E812} = {B91A26D9-A6B8-49B6-A452-43FC20AB5960}
 		{7717F456-5520-4F2D-849F-6C13A54E3731} = {B91A26D9-A6B8-49B6-A452-43FC20AB5960}
+		{9937D5FB-24AF-4CA9-859A-C14BBCE3B2B0} = {B91A26D9-A6B8-49B6-A452-43FC20AB5960}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B3166EDE-037B-4C68-BEBA-5DE9C5E3DB82}

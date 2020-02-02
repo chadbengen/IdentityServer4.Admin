@@ -24,10 +24,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public class SingleTenant : ISkorubaTenant
     {
-        public string Id { get; }
-        public string Identifier { get; }
-        public string Name { get; }
-        public string ConnectionString { get; }
-        public IDictionary<string, object> Items { get; } = new Dictionary<string, object>();
+        public string Id { get; set; }
+        public string Identifier { get; set; }
+        public string Name { get; set; }
+        public string ConnectionString { get; set; }
+        public IDictionary<string, object> Items { get; set; } = new Dictionary<string, object>();
     }
 }

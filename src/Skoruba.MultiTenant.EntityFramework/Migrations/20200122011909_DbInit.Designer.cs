@@ -3,12 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Skoruba.MultiTenant.Stores;
+using Skoruba.MultiTenant.EntityFramework;
 
 namespace Skoruba.MultiTenant.EFCacheStore.Migrations
 {
-    [DbContext(typeof(EFCoreStoreDbContext))]
+    [DbContext(typeof(DefaultTenantDbContext))]
     [Migration("20200122011909_DbInit")]
     partial class DbInit
     {

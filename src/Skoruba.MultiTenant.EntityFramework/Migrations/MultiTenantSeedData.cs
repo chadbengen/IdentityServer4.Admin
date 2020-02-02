@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Skoruba.MultiTenant.EFCacheStore
+namespace Skoruba.MultiTenant.EntityFramework.Migrations
 {
     public class MultiTenantSeedData
     {

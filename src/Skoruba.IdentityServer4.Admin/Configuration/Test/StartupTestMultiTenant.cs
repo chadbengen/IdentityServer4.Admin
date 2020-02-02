@@ -9,6 +9,7 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.Admin.Helpers;
 using Skoruba.IdentityServer4.Admin.Middlewares;
 using Skoruba.MultiTenant.Configuration;
+using Skoruba.MultiTenant.EntityFramework;
 using Skoruba.MultiTenant.Finbuckle;
 using Skoruba.MultiTenant.Finbuckle.Strategies;
 using Skoruba.MultiTenant.IdentityServer;
@@ -62,8 +63,8 @@ namespace Skoruba.IdentityServer4.Admin.Configuration.Test
                 .WithStrategy<ClaimsStrategy>(ServiceLifetime.Singleton);
 
             // seed tenant for integration tests
-            var tenantStore = services.BuildServiceProvider().GetService<EFCoreStoreDbContext>();
-            tenantStore.TenantInfo.Add(new TenantEntity() { Id = Guid.NewGuid().ToString(), Identifier = "0000", Name = "Test", ConnectionString = "na" });
+            var tenantStore = services.BuildServiceProvider().GetService<DefaultTenantDbContext>();
+            tenantStore.Tenants.Add(new TenantEntity() { Id = Guid.NewGuid().ToString(), Identifier = "0000", Name = "Test", ConnectionString = "na" });
             tenantStore.SaveChanges();
         }
         public override void ConfigureMultiTenantMiddleware(IApplicationBuilder app)

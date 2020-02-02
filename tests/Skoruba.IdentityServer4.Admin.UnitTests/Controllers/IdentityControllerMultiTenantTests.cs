@@ -37,6 +37,7 @@ using Skoruba.MultiTenant.Stores;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.MultiTenantIdentity;
 using Finbuckle.MultiTenant;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Resources;
+using Skoruba.MultiTenant.EntityFramework;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 {
@@ -660,9 +661,9 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
                 .WithStrategy<ClaimsStrategy>(ServiceLifetime.Singleton);
 
             // seed tenant for integration tests
-            var tenantStore = services.BuildServiceProvider().GetService<EFCoreStoreDbContext>();
+            var tenantStore = services.BuildServiceProvider().GetService<DefaultTenantDbContext>();
             var tenant = TenantMock.GetTenantFaker.Generate();
-            tenantStore.TenantInfo.Add(new TenantEntity() { Id = tenant.Id, Identifier = tenant.Identifier, ConnectionString = tenant.ConnectionString, Items = tenant.Items, Name = tenant.Name });
+            tenantStore.Tenants.Add(new TenantEntity() { Id = tenant.Id, Identifier = tenant.Identifier, ConnectionString = tenant.ConnectionString, Items = tenant.Items, Name = tenant.Name });
             tenantStore.SaveChanges();
 
             // register mock tenant

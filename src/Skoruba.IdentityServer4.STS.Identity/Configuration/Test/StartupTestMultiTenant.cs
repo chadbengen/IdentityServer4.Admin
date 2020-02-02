@@ -7,6 +7,7 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using Skoruba.MultiTenant.Configuration;
+using Skoruba.MultiTenant.EntityFramework;
 using Skoruba.MultiTenant.Finbuckle;
 using Skoruba.MultiTenant.Finbuckle.Strategies;
 using Skoruba.MultiTenant.IdentityServer;
@@ -49,8 +50,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Configuration.Test
                 .WithStrategy<FormStrategy>(ServiceLifetime.Singleton);
 
             // seed tenant for integration tests
-            var tenantStore = services.BuildServiceProvider().GetService<EFCoreStoreDbContext>();
-            tenantStore.TenantInfo.Add(new TenantEntity() { Id = Guid.NewGuid().ToString(), Identifier = "0000", Name = "Test", ConnectionString = "na" });
+            var tenantStore = services.BuildServiceProvider().GetService<DefaultTenantDbContext>();
+            tenantStore.Tenants.Add(new TenantEntity() { Id = Guid.NewGuid().ToString(), Identifier = "0000", Name = "Test", ConnectionString = "na" });
             tenantStore.SaveChanges();
         }
 

@@ -4,12 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Skoruba.DbMigrator.Abstractions;
 using Skoruba.DbMigrator.Abstractions.Dependency;
+using Skoruba.MultiTenant.Abstractions;
 using Skoruba.MultiTenant.Configuration;
-using Skoruba.MultiTenant.EFCacheStore;
-using Skoruba.MultiTenant.Stores;
 using System.Threading.Tasks;
 
-namespace Skoruba.MultiTenant.Finbuckle
+namespace Skoruba.MultiTenant.EntityFramework.Migrations
 {
     [DependsOn("Skoruba.DbMigrator.MigrateAdminIdentityDbContext")]
     public class MigrateTenantDbContext : MigrateAndSeedBase
@@ -26,7 +25,7 @@ namespace Skoruba.MultiTenant.Finbuckle
 #pragma warning disable CS0162 // Unreachable code detected
             if (_multiTenantConfiguration.MultiTenantEnabled)
             {
-                await MigrateDbContext<EFCoreStoreDbContext>(services.BuildServiceProvider());
+                await MigrateDbContext<DefaultTenantDbContext>(services.BuildServiceProvider());
             }
             else
             {
@@ -40,17 +39,16 @@ namespace Skoruba.MultiTenant.Finbuckle
 #pragma warning disable CS0162 // Unreachable code detected
             if (_multiTenantConfiguration.MultiTenantEnabled)
             {
-                await DoSeed<EFCoreStoreDbContext, TenantEntity>(services, configurationRoot);
+                await DoSeed<DefaultTenantDbContext>(services, configurationRoot);
             }
             else
             {
                 _logger.LogDebug("IsMultiTenant = false.  Skipped seeding {SourceContext}.");
             }
- #pragma warning restore CS0162 // Unreachable code detected
-       }
-        public async Task DoSeed<TDbContext, TTenantInfo>(IServiceCollection services, IConfigurationRoot configurationRoot)
+#pragma warning restore CS0162 // Unreachable code detected
+        }
+        public async Task DoSeed<TDbContext>(IServiceCollection services, IConfigurationRoot configurationRoot)
             where TDbContext : DbContext
-            where TTenantInfo : class, ITenantEntity, new()
         {
             var data = new MultiTenantSeedData();
             configurationRoot.GetSection("MultiTenantData").Bind(data);
@@ -66,7 +64,7 @@ namespace Skoruba.MultiTenant.Finbuckle
                 {
                     foreach (var tenant in seedData.Tenants)
                     {
-                        var entity = new TTenantInfo()
+                        var entity = new TenantEntity()
                         {
                             Id = tenant.Id,
                             Identifier = tenant.Identifier,
@@ -75,7 +73,7 @@ namespace Skoruba.MultiTenant.Finbuckle
                             Items = tenant.Items
                         };
 
-                        var dbTenant = await context.Set<TTenantInfo>().FirstOrDefaultAsync(t => t.Id == tenant.Id);
+                        var dbTenant = await context.Set<TenantEntity>().FirstOrDefaultAsync(t => t.Id == tenant.Id);
 
                         if (dbTenant != null)
                         {
@@ -97,7 +95,7 @@ namespace Skoruba.MultiTenant.Finbuckle
                         }
                         else
                         {
-                            context.Set<TTenantInfo>().Add(entity);
+                            context.Set<TenantEntity>().Add(entity);
                             await context.SaveChangesAsync();
 
                             _logger.LogDebug("Tenant {TenantId} was added.", entity.Id, entity);

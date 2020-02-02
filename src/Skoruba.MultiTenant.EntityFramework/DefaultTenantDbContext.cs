@@ -14,11 +14,11 @@
 
 using Microsoft.EntityFrameworkCore;
 
-namespace Skoruba.MultiTenant.Stores
+namespace Skoruba.MultiTenant.EntityFramework
 {
-    public class EFCoreStoreDbContext : EFCoreStoreDbContextBase<TenantEntity>
+    public class DefaultTenantDbContext : TenantDbContext<TenantEntity>
     {
-        public EFCoreStoreDbContext(DbContextOptions<EFCoreStoreDbContext> options) : base(options)
+        public DefaultTenantDbContext(DbContextOptions<DefaultTenantDbContext> options) : base(options)
         {
         }
     }

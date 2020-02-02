@@ -1,4 +1,10 @@
-﻿namespace Skoruba.MultiTenant.Abstractions
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Skoruba.MultiTenant.Abstractions
 {
     public interface ISkorubaTenantContext
     {

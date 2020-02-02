@@ -13,6 +13,7 @@
 //    limitations under the License.
 
 using Microsoft.EntityFrameworkCore;
+using Skoruba.MultiTenant.EntityFramework;
 using Skoruba.MultiTenant.Stores;
 using System;
 
@@ -21,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Provices builder methods for Skoruba.Multitenancy services and configuration.
     /// </summary>
-    public static class FinbuckleMultiTenantBuilderExtensions
+    public static class DependencyInjection
     {
         /// <summary>
         /// Adds the default EFCacheStore and dbcontext.  The store will cache results for 48 hours.
@@ -29,8 +30,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The same MultiTenantBuilder passed into the method.</returns>
         public static FinbuckleMultiTenantBuilder WithEFCacheStore(this FinbuckleMultiTenantBuilder builder, Action<DbContextOptionsBuilder> options)
         {
-            builder.Services.AddDbContext<EFCoreStoreDbContext>(options); // Note, will not override existing context if already added.
-            return builder.WithStore<EFCoreCacheStore<EFCoreStoreDbContext, TenantEntity>>(ServiceLifetime.Scoped);
+            builder.Services.AddDbContext<DefaultTenantDbContext>(options); // Note, will not override existing context if already added.
+            return builder.WithStore<DefaultEFCoreCacheStore>(ServiceLifetime.Scoped);
         }
     }
 }

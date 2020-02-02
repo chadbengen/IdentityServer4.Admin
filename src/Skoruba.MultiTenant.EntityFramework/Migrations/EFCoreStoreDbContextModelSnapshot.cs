@@ -2,12 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Skoruba.MultiTenant.Stores;
+using Skoruba.MultiTenant.EntityFramework;
 
 namespace Skoruba.MultiTenant.EFCacheStore.Migrations
 {
-    [DbContext(typeof(EFCoreStoreDbContext))]
+    [DbContext(typeof(DefaultTenantDbContext))]
     partial class EFCoreStoreDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

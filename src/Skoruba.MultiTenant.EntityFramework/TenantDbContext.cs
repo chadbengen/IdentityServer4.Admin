@@ -14,16 +14,17 @@
 
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Skoruba.MultiTenant.Abstractions;
 using System.Collections.Generic;
 
-namespace Skoruba.MultiTenant.Stores
+namespace Skoruba.MultiTenant.EntityFramework
 {
-    public abstract class EFCoreStoreDbContextBase<TTentantInfo> : DbContext
-        where TTentantInfo : class, ITenantEntity
+    public class TenantDbContext<TTentantInfo> : DbContext
+        where TTentantInfo : class, ISkorubaTenant
     {
-        public DbSet<TTentantInfo> TenantInfo { get; set; }
+        public DbSet<TTentantInfo> Tenants { get; set; }
 
-        public EFCoreStoreDbContextBase(DbContextOptions options) : base(options)
+        public TenantDbContext(DbContextOptions options) : base(options)
         {
         }
 

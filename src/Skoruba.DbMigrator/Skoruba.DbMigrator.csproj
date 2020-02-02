@@ -39,7 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Skoruba.DbMigrator.Abstractions\Skoruba.DbMigrator.Abstractions.csproj" />
     <ProjectReference Include="..\Skoruba.IdentityServer4.Admin\Skoruba.IdentityServer4.Admin.csproj" />
-    <ProjectReference Include="..\Skoruba.MultiTenant.EFCacheStore\Skoruba.MultiTenant.EFCacheStore.csproj" />
+    <ProjectReference Include="..\Skoruba.MultiTenant.EntityFramework\Skoruba.MultiTenant.EntityFramework.csproj" />
   </ItemGroup>
 
 </Project>
