@@ -1,12 +1,15 @@
-﻿using HealthChecks.UI.Client;
+﻿using Finbuckle.MultiTenant.Contrib.Extensions;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Stores;
 using Skoruba.IdentityServer4.STS.Identity.Configuration;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Interfaces;
@@ -51,6 +54,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
             // Add authorization policies for MVC
             RegisterAuthorization(services);
 
+            ConfigureMultiTenantServices(services);
+
             services.AddIdSHealthChecks<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminIdentityDbContext>(Configuration);
         }
 
@@ -73,9 +78,13 @@ namespace Skoruba.IdentityServer4.STS.Identity
             app.UseMvcLocalizationServices();
 
             app.UseRouting();
+            if (Configuration.GetSection("MultiTenantConfiguration").IsMultiTenantEnabled())
+            {
+                app.UseMultiTenant();
+            }
             app.UseAuthorization();
-            app.UseEndpoints(endpoint => 
-            { 
+            app.UseEndpoints(endpoint =>
+            {
                 endpoint.MapDefaultControllerRoute();
                 endpoint.MapHealthChecks("/health", new HealthCheckOptions
                 {
@@ -122,6 +131,27 @@ namespace Skoruba.IdentityServer4.STS.Identity
             Configuration.GetSection(ConfigurationConsts.AdminConfigurationKey).Bind(rootConfiguration.AdminConfiguration);
             Configuration.GetSection(ConfigurationConsts.RegisterConfigurationKey).Bind(rootConfiguration.RegisterConfiguration);
             return rootConfiguration;
+        }
+
+        public virtual void ConfigureMultiTenantServices(IServiceCollection services)
+        {
+            var configuration = Configuration.GetSection("MultiTenantConfiguration");
+
+            if (configuration.IsMultiTenantEnabled())
+            {
+                services.AddMultiTenant()
+                    .WithContribTenantContext(configuration)
+                    .WithDefaultEFCacheStore(options => options.UseSqlServer(Configuration.GetConnectionString("TenantsDbConnection")))
+                    .WithClaimsStrategy()
+                    .WithFormStrategy(configuration.GetSection("FormStrategyConfiguration"));
+
+                services.AddDefaultMultiTenantIdentityServices<UserIdentity, UserIdentityRole, DefaultMultiTenantUserStore, DefaultMultiTenantRoleStore>();
+                services.AddDefaultAddTenantToClaimIdentityServerProfileService<UserIdentity>();
+            }
+            else
+            {
+                services.AddSingleTenantConfiguration();
+            }
         }
     }
 }

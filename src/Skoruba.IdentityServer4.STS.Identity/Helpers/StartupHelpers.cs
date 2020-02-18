@@ -27,6 +27,7 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.PostgreSQL.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Helpers;
+using Microsoft.IdentityModel.Logging;
 
 namespace Skoruba.IdentityServer4.STS.Identity.Helpers
 {
@@ -224,6 +225,10 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 iis.AuthenticationDisplayName = "Windows";
                 iis.AutomaticAuthentication = false;
             });
+
+#if DEBUG
+            IdentityModelEventSource.ShowPII = true;
+#endif
 
             var authenticationBuilder = services.AddAuthentication();
 

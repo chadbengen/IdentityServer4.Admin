@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>ff374f98-11b0-418a-b590-3cead718bc87</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="tenantdata.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MigrateAndSeed\TenantDbContext\tenantdata.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EFMigrateAndSeed" Version="0.1.0" />
+    <PackageReference Include="EntityFramework" Version="6.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.AspNetCore\Finbuckle.MultiTenant.Contrib.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.EFCoreStore\Finbuckle.MultiTenant.Contrib.EFCoreStore.csproj" />
+    <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.Identity\Finbuckle.MultiTenant.Contrib.Identity.csproj" />
+    <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib\Finbuckle.MultiTenant.Contrib.csproj" />
+    <ProjectReference Include="..\Skoruba.IdentityServer4.Admin.EntityFramework.Shared\Skoruba.IdentityServer4.Admin.EntityFramework.Shared.csproj" />
+    <ProjectReference Include="..\Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer\Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.csproj" />
+  </ItemGroup>
+
+</Project>

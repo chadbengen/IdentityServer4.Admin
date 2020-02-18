@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "CareComplete.DbMigrator": {
+      "commandName": "Project"
+    }
+  }
+}

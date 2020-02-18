@@ -15,6 +15,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="3.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="3.0.9" />
+        <PackageReference Include="Finbuckle.MultiTenant.Contrib.Strategies" Version="1.0.1" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.0" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.0" />
 
@@ -117,6 +118,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.AspNetCore\Finbuckle.MultiTenant.Contrib.AspNetCore.csproj" />
+        <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.EFCoreStore\Finbuckle.MultiTenant.Contrib.EFCoreStore.csproj" />
+        <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.Identity\Finbuckle.MultiTenant.Contrib.Identity.csproj" />
+        <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib.Strategies\Finbuckle.MultiTenant.Contrib.Strategies.csproj" />
+        <ProjectReference Include="..\..\..\Finbuckle.MultiTenant.Contrib\src\Finbuckle.MultiTenant.Contrib\Finbuckle.MultiTenant.Contrib.csproj" />
         <ProjectReference Include="..\Skoruba.IdentityServer4.Admin.BusinessLogic.Identity\Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.csproj" />
         <ProjectReference Include="..\Skoruba.IdentityServer4.Admin.BusinessLogic.Shared\Skoruba.IdentityServer4.Admin.BusinessLogic.Shared.csproj" />
         <ProjectReference Include="..\Skoruba.IdentityServer4.Admin.BusinessLogic\Skoruba.IdentityServer4.Admin.BusinessLogic.csproj" />

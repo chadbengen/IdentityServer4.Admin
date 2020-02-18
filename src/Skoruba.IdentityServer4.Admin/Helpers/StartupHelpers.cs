@@ -42,6 +42,7 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.PostgreSQL.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Helpers;
+using Finbuckle.MultiTenant.Contrib.Claims;
 
 namespace Skoruba.IdentityServer4.Admin.Helpers
 {
@@ -384,6 +385,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                         }
 
                         options.ClaimActions.MapJsonKey(adminConfiguration.TokenValidationClaimRole, adminConfiguration.TokenValidationClaimRole, adminConfiguration.TokenValidationClaimRole);
+                        options.ClaimActions.MapUniqueJsonKey(ContribClaimTypes.TenantId, ContribClaimTypes.TenantId);
 
                         options.SaveTokens = true;
 

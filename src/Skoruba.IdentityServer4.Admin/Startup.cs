@@ -16,6 +16,9 @@ using Skoruba.IdentityServer4.Admin.Helpers;
 using Skoruba.IdentityServer4.Admin.Configuration;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 using System;
+using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant.Contrib.Extensions;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Stores;
 
 namespace Skoruba.IdentityServer4.Admin
 {
@@ -77,6 +80,8 @@ namespace Skoruba.IdentityServer4.Admin
             // Add audit logging
             services.AddAuditEventLogging<AdminAuditLogDbContext, AuditLog>(Configuration);
 
+            ConfigureMultiTenantServices(services);
+
             services.AddIdSHealthChecks<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminIdentityDbContext, AdminLogDbContext, AdminAuditLogDbContext>(Configuration, rootConfiguration.AdminConfiguration);
         }
 
@@ -98,6 +103,11 @@ namespace Skoruba.IdentityServer4.Admin
             app.UseStaticFiles();
 
             UseAuthentication(app);
+            
+            if (Configuration.GetSection("MultiTenantConfiguration").IsMultiTenantEnabled())
+            {
+                app.UseMultiTenant();
+            }
 
             // Use Localization
             app.ConfigureLocalization();
@@ -153,6 +163,24 @@ namespace Skoruba.IdentityServer4.Admin
             Configuration.GetSection(ConfigurationConsts.IdentityDataConfigurationKey).Bind(rootConfiguration.IdentityDataConfiguration);
             Configuration.GetSection(ConfigurationConsts.IdentityServerDataConfigurationKey).Bind(rootConfiguration.IdentityServerDataConfiguration);
             return rootConfiguration;
+        }
+        public virtual void ConfigureMultiTenantServices(IServiceCollection services)
+        {
+            var configuration = Configuration.GetSection("MultiTenantConfiguration");
+
+            if (configuration.IsMultiTenantEnabled())
+            {
+                services.AddMultiTenant()
+                    .WithContribTenantContext(configuration)
+                    .WithDefaultEFCacheStore(options => options.UseSqlServer(Configuration.GetConnectionString("TenantsDbConnection")))
+                    .WithClaimsStrategy();
+
+                services.AddDefaultMultiTenantIdentityServices<UserIdentity, UserIdentityRole, DefaultMultiTenantUserStore, DefaultMultiTenantRoleStore>();
+            }
+            else
+            {
+                services.AddSingleTenantConfiguration();
+            }
         }
     }
 }

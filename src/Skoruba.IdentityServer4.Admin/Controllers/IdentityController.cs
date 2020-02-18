@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Finbuckle.MultiTenant.Contrib.Abstractions;
 using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -48,6 +49,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         private readonly IGenericControllerLocalizer<IdentityController<TUserDto, TUserDtoKey, TRoleDto, TRoleDtoKey, TUserKey, TRoleKey, TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken,
             TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
             TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto>> _localizer;
+        private readonly ITenantContext _tenantContext;
 
         public IdentityController(IIdentityService<TUserDto, TUserDtoKey, TRoleDto, TRoleDtoKey, TUserKey, TRoleKey, TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken,
                 TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
@@ -55,10 +57,11 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             ILogger<ConfigurationController> logger,
             IGenericControllerLocalizer<IdentityController<TUserDto, TUserDtoKey, TRoleDto, TRoleDtoKey, TUserKey, TRoleKey, TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken,
                 TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
-                TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto>> localizer) : base(logger)
+                TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto>> localizer, ITenantContext tenantContext) : base(logger)
         {
             _identityService = identityService;
             _localizer = localizer;
+            _tenantContext = tenantContext;
         }
 
         [HttpGet]
@@ -77,12 +80,16 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (EqualityComparer<TRoleDtoKey>.Default.Equals(id, default))
             {
-                return View(new TRoleDto());
+                var role = new TRoleDto();
+                _tenantContext.SetTenantId(role);
+                return View(role);
             }
+            else
+            {
+                var role = await _identityService.GetRoleAsync(id.ToString());
 
-            var role = await _identityService.GetRoleAsync(id.ToString());
-
-            return View(role);
+                return View(role);
+            }
         }
 
         [HttpPost]
@@ -164,6 +171,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         public IActionResult UserProfile()
         {
             var newUser = new TUserDto();
+            _tenantContext.SetTenantId(newUser);
 
             return View("UserProfile", newUser);
         }

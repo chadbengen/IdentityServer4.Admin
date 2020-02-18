@@ -4,6 +4,9 @@
 @inject IViewLocalizer Localizer
 @model Skoruba.IdentityServer4.STS.Identity.ViewModels.Account.LoginViewModel
 @inject IRootConfiguration RootConfiguration
+@using Finbuckle.MultiTenant.Contrib.Abstractions
+@using Finbuckle.MultiTenant.Contrib.Extensions
+@inject ITenantContext  TenantContext;
 
 <div class="login-page">
     <div class="page-header">
@@ -24,6 +27,21 @@
                             <input type="hidden" asp-for="ReturnUrl" />
 
                             <fieldset>
+                                @if (TenantContext.TenantConfigurations.UseTenantCode())
+                                {
+                                    <div class="form-group row">
+                                        <div class="col-sm-12">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text" id="input-tenantcode">
+                                                        <i class="fa fa-building"></i>
+                                                    </span>
+                                                </div>
+                                                <input class="form-control" placeholder="@Localizer["TenantCode"]" asp-for="TenantCode" aria-label="TenantCode" aria-describedby="input-tenantcode" autofocus>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="input-group">
@@ -69,7 +87,7 @@
                                     <div class="col-sm-12">
                                         <button class="btn btn-primary" name="button" value="login">@Localizer["Login"]</button>
                                         <button class="btn btn-secondary" name="button" value="cancel">@Localizer["Cancel"]</button>
-                                        <a asp-action="ForgotPassword" asp-controller="Account" class="btn btn-info" value="forgot">@Localizer["Forgot"]</a>                                        
+                                        <a asp-action="ForgotPassword" asp-controller="Account" class="btn btn-info" value="forgot">@Localizer["Forgot"]</a>
                                         @if (RootConfiguration.RegisterConfiguration.Enabled)
                                         {
                                             <a asp-action="Register" asp-controller="Account" class="btn btn-dark" value="forgot">@Localizer["Register"]</a>

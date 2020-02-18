@@ -39,7 +39,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
             Host.CreateDefaultBuilder(args)
                  .ConfigureAppConfiguration((hostContext, configApp) =>
                  {
-                     configApp.AddJsonFile("serilog.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile("serilog.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile("appsettings.tenant.json", optional: false, reloadOnChange: true);
 
                      if (hostContext.HostingEnvironment.IsDevelopment())
                      {

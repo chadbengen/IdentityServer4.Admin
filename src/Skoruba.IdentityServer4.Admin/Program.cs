@@ -16,7 +16,7 @@ namespace Skoruba.IdentityServer4.Admin
     {
         private const string SeedArgs = "/seed";
 
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(Configuration)
@@ -29,15 +29,15 @@ namespace Skoruba.IdentityServer4.Admin
 
                 var host = CreateHostBuilder(args).Build();
 
-                // Uncomment this to seed upon startup, alternatively pass in `dotnet run /seed` to seed using CLI
-                // await DbMigrationHelpers.EnsureSeedData<IdentityServerConfigurationDbContext, AdminIdentityDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext, AdminAuditLogDbContext, UserIdentity, UserIdentityRole>(host);
-                if (seed)
-                {
-                    await DbMigrationHelpers
-                        .EnsureSeedData<IdentityServerConfigurationDbContext, AdminIdentityDbContext,
-                            IdentityServerPersistedGrantDbContext, AdminLogDbContext, AdminAuditLogDbContext,
-                            UserIdentity, UserIdentityRole>(host);
-                }
+                //// Uncomment this to seed upon startup, alternatively pass in `dotnet run /seed` to seed using CLI
+                //// await DbMigrationHelpers.EnsureSeedData<IdentityServerConfigurationDbContext, AdminIdentityDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext, AdminAuditLogDbContext, UserIdentity, UserIdentityRole>(host);
+                //if (seed)
+                //{
+                //    await DbMigrationHelpers
+                //        .EnsureSeedData<IdentityServerConfigurationDbContext, AdminIdentityDbContext,
+                //            IdentityServerPersistedGrantDbContext, AdminLogDbContext, AdminAuditLogDbContext,
+                //            UserIdentity, UserIdentityRole>(host);
+                //}
 
                 host.Run();
             }
@@ -63,8 +63,7 @@ namespace Skoruba.IdentityServer4.Admin
                  .ConfigureAppConfiguration((hostContext, configApp) =>
                  {
                      configApp.AddJsonFile("serilog.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile("identitydata.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile("identityserverdata.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile("appsettings.tenant.json", optional: false, reloadOnChange: true);
 
                      if (hostContext.HostingEnvironment.IsDevelopment())
                      {

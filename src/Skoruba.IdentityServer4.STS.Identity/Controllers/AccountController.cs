@@ -9,6 +9,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Finbuckle.MultiTenant.Contrib.Abstractions;
+using Finbuckle.MultiTenant.Contrib.Extensions;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Events;
@@ -45,6 +47,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         private readonly IGenericControllerLocalizer<AccountController<TUser, TKey>> _localizer;
         private readonly LoginConfiguration _loginConfiguration;
         private readonly RegisterConfiguration _registerConfiguration;
+        private readonly ITenantContext _tenantContext;
 
         public AccountController(
             UserResolver<TUser> userResolver,
@@ -57,7 +60,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             IEmailSender emailSender,
             IGenericControllerLocalizer<AccountController<TUser, TKey>> localizer,
             LoginConfiguration loginConfiguration,
-            RegisterConfiguration registerConfiguration)
+            RegisterConfiguration registerConfiguration,
+            ITenantContext tenantContext)
         {
             _userResolver = userResolver;
             _userManager = userManager;
@@ -70,6 +74,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             _localizer = localizer;
             _loginConfiguration = loginConfiguration;
             _registerConfiguration = registerConfiguration;
+            _tenantContext = tenantContext;
         }
 
         /// <summary>
@@ -575,6 +580,17 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 UserName = model.UserName,
                 Email = model.Email
             };
+          
+            if (_tenantContext.IsMultiTenantEnabled && _tenantContext.TenantConfigurations.UseTenantCode())
+            {
+                if (_tenantContext.TenantResolutionRequired && !_tenantContext.TenantResolved)
+                {
+                    ModelState.AddModelError("TenantCode", "The tenant code is invalid.");
+                    return View(model);
+                }
+
+                ((IHaveTenantId)user).TenantId = _tenantContext.Tenant.Id;
+            }
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
